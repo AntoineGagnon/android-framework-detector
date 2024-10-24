@@ -37,7 +37,7 @@ var techList = []Technology{
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: go run main.go <app_name.apk>")
+		fmt.Println("Usage: android-framework-detector <app_name.apk>")
 		os.Exit(1)
 	}
 
