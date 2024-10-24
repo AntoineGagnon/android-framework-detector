@@ -17,7 +17,7 @@ This repository contains a Go program designed to detect the mobile development 
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/your_username/apk-framework-detector.git
+   git clone https://github.com/AntoineGagnon/apk-framework-detector.git
    cd apk-framework-detector
    ```
 
