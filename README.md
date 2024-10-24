@@ -11,8 +11,7 @@ This repository contains a Go program designed to detect the mobile development 
   - Cordova
   - Ionic
   - Xamarin
-  - Native (Java/Kotlin)
-- **Verbose Output**: Optionally display detailed output on the framework detection process.
+  - Native (Java/Kotlin) 
 
 ## Installation
 
@@ -30,9 +29,7 @@ This repository contains a Go program designed to detect the mobile development 
 
 ## Usage
 
-Run the program by specifying an APK file as an argument. You can also use the `--verbose` or `-v` flag to get a more detailed output.
-
-### Basic Usage
+Run the program by specifying an APK file as an argument.
 
 ```bash
 ./apkdetector <app_name.apk>
@@ -40,15 +37,6 @@ Run the program by specifying an APK file as an argument. You can also use the `
 
 This will output the framework name directly.
 
-### Verbose Mode
-
-```bash
-./apkdetector --verbose <app_name.apk>
-# or
-./apkdetector -v <app_name.apk>
-```
-
-This will output a more detailed statement indicating the framework used.
 
 ## License
 

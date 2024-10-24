@@ -2,9 +2,8 @@ package main
 
 import (
 	"archive/zip"
-	"flag"
 	"fmt"
-	"log"
+	"os"
 	"strings"
 )
 
@@ -37,25 +36,19 @@ var techList = []Technology{
 }
 
 func main() {
-	verbose := flag.Bool("verbose", false, "display detailed output")
-	flag.BoolVar(verbose, "v", false, "display detailed output (shorthand)")
-	flag.Parse()
-
-	if len(flag.Args()) < 1 {
-		log.Fatal("Usage: go run main.go [--verbose|-v] <app_name.apk>")
+	if len(os.Args) < 2 {
+		fmt.Println("Usage: go run main.go <app_name.apk>")
+		os.Exit(1)
 	}
 
-	appName := flag.Arg(0)
+	appName := os.Args[1]
 	framework, err := detectFramework(appName)
 	if err != nil {
-		log.Fatalf("Error detecting framework: %v", err)
+		fmt.Printf("Error detecting framework: %v\n", err)
+		os.Exit(1)
 	}
 
-	if *verbose {
-		fmt.Printf("App was written in %s\n", framework)
-	} else {
-		fmt.Println(framework)
-	}
+	fmt.Println(framework)
 }
 
 // detectFramework checks the contents of the APK to determine the framework used.
