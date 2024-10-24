@@ -15,6 +15,16 @@ This repository contains a Go program designed to detect the mobile development 
 
 ## Installation
 
+### Direct install
+
+Build and install directly from the repo:
+
+   ```bash
+   go install github.com/AntoineGagnon/android-framework-detector@latest
+   ```
+
+### Clone and build
+
 1. **Clone the Repository**:
    ```bash
    git clone https://github.com/AntoineGagnon/apk-framework-detector.git
