@@ -3,14 +3,14 @@ package main
 import (
 	"archive/zip"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
-// Framework represents the name of a mobile development framework.
 type Framework string
 
-// Constants for the supported frameworks.
 const (
 	Flutter    Framework = "Flutter"
 	ReactNative          = "React Native"
@@ -20,13 +20,11 @@ const (
 	Native               = "Native (Java/Kotlin)"
 )
 
-// Technology holds framework name and associated directory/file paths.
 type Technology struct {
 	Framework   Framework
 	Identifiers []string
 }
 
-// techList contains the definitions for each framework's identifying files/directories.
 var techList = []Technology{
 	{Framework: Flutter, Identifiers: []string{"libflutter.so"}},
 	{Framework: ReactNative, Identifiers: []string{"libreactnativejni.so", "assets/index.android.bundle"}},
@@ -37,11 +35,21 @@ var techList = []Technology{
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: android-framework-detector <app_name.apk>")
+		fmt.Println("Usage: android-framework-detector <app_name.apk|app_name.xapk>")
 		os.Exit(1)
 	}
 
 	appName := os.Args[1]
+
+	if strings.HasSuffix(appName, ".xapk") {
+		largestAPK, err := extractLargestAPK(appName)
+		if err != nil {
+			fmt.Printf("Error processing XAPK: %v\n", err)
+			os.Exit(1)
+		}
+		appName = largestAPK
+	}
+
 	framework, err := detectFramework(appName)
 	if err != nil {
 		fmt.Printf("Error detecting framework: %v\n", err)
@@ -51,7 +59,59 @@ func main() {
 	fmt.Println(framework)
 }
 
-// detectFramework checks the contents of the APK to determine the framework used.
+func extractLargestAPK(xapkPath string) (string, error) {
+	zipReader, err := zip.OpenReader(xapkPath)
+	if err != nil {
+		return "", fmt.Errorf("opening xapk file: %w", err)
+	}
+	defer zipReader.Close()
+
+	var largestAPK string
+	var maxSize int64
+
+	for _, file := range zipReader.File {
+		if filepath.Ext(file.Name) == ".apk" {
+			if file.UncompressedSize64 > uint64(maxSize) {
+				maxSize = int64(file.UncompressedSize64)
+				largestAPK = file.Name
+			}
+		}
+	}
+
+	if largestAPK == "" {
+		return "", fmt.Errorf("no APK file found in XAPK")
+	}
+
+	extractedAPKPath := filepath.Join(os.TempDir(), largestAPK)
+	if err := extractFile(zipReader, largestAPK, extractedAPKPath); err != nil {
+		return "", fmt.Errorf("extracting APK from XAPK: %w", err)
+	}
+
+	return extractedAPKPath, nil
+}
+
+func extractFile(zipReader *zip.ReadCloser, fileName, destPath string) error {
+	for _, file := range zipReader.File {
+		if file.Name == fileName {
+			srcFile, err := file.Open()
+			if err != nil {
+				return err
+			}
+			defer srcFile.Close()
+
+			destFile, err := os.Create(destPath)
+			if err != nil {
+				return err
+			}
+			defer destFile.Close()
+
+			_, err = io.Copy(destFile, srcFile)
+			return err
+		}
+	}
+	return fmt.Errorf("file %s not found in archive", fileName)
+}
+
 func detectFramework(appName string) (Framework, error) {
 	zipReader, err := zip.OpenReader(appName)
 	if err != nil {
@@ -69,7 +129,6 @@ func detectFramework(appName string) (Framework, error) {
 	return Native, nil
 }
 
-// matchesFramework checks if a file name matches any of the identifiers for a framework.
 func matchesFramework(fileName string, identifiers []string) bool {
 	for _, identifier := range identifiers {
 		if strings.Contains(fileName, identifier) {
